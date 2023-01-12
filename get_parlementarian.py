@@ -46,12 +46,7 @@ def get_all_parl_place():
     """Get place number of parliementary for each plan
 
     Returns:
-        dict: {place:dict{name:place}}
-        info :
-            fullname: (string) -- Full name of parlementary
-            country: (string) -- Country of the parlementary
-            politicalGroup: (string) -- Political group in EP
-            nationalPoliticalGroup: (string) -- Political group in country
+        dict: {plan: dict{place:name}}
     """
     all_plan = {}
 
@@ -69,11 +64,18 @@ def get_all_parl_place():
     return all_plan
 
 
-def get_parl_info():
+def get_parl_info(filepath_transco = "../EP_project/transco/"):
     """Get list of all parlementary 
 
     Returns:
         dict: {id:{info}}
+        info :
+            fullname: (string) -- Full name of parlementary
+            country: (string) -- Country of the parlementary
+            politicalGroup: (string) -- Political group in EP
+            nationalPoliticalGroup: (string) -- Political group in country
+            STR_siege: (string) -- Siege number in Strasbourg
+            BRU_siege : (string) -- Siege number in Brussel 
     """
     parl_info = {}
 
@@ -87,100 +89,22 @@ def get_parl_info():
             if info.name != "id":
                 parl_info[id][info.name] = info.string
     
+    with open(filepath_transco + "corrected_transco_parl_bru.csv", "r") as transco_bru:
+        transco_bru.readline()
+        for transco_line in transco_bru.readlines():
+            parl_id, siege_id, name_surname, siege_name = re.sub("\n", "", transco_line).split(",")
+            parl_info[parl_id]["BRU_siege"] = siege_id
+
+    with open(filepath_transco + "corrected_transco_parl_str.csv", "r") as transco_str:
+        transco_str.readline()
+        for transco_line in transco_str.readlines():
+            parl_id, siege_id, name_surname, siege_name = re.sub("\n", "", transco_line).split(",")
+            parl_info[parl_id]["STR_siege"] = siege_id
+
     return parl_info
 
 
-# print(get_all_parl_place())
-
-# print(get_parl_info())
-
-parl_place = get_all_parl_place()
-brux = parl_place["BRU"].copy()
-strasb = parl_place["STR"].copy()
-
-print(len(brux))
-print(len(strasb))
-print(brux)
-print(strasb)
-
-
-parl_info = get_parl_info()
-
-all_parl_info = {}
-
-for parl_id in parl_info.keys():
-    parl_info_name = parl_info[parl_id]["fullName"]
-
-    name_surname = " ".join(parl_info_name.split(" ")[1:]) + " " + parl_info_name.split(" ")[0].upper()
-
-    all_parl_info[parl_id] = parl_info[parl_id].copy()
-
-    print(name_surname)
-
-    # bru_all = []
-    bru_real_siege = -1
-    for bru_siege_id in brux.keys():
-        print(bru_siege_id + " - " + brux[bru_siege_id] + "::" + name_surname)
-        if name_surname[0:len(brux[bru_siege_id])] == brux[bru_siege_id]:
-            # bru_all.append(brux[bru_siege_id])
-            bru_real_siege = bru_siege_id
-    
-    if int(bru_real_siege) > 0:
-        all_parl_info[parl_id]["BRU"] = bru_real_siege
-        del brux[bru_real_siege]
-    else :
-        print("WARNING")
-
-    # str_all = []
-    str_real_siege = -1
-    for str_siege_id in strasb.keys():
-        print(str_siege_id + " - " + strasb[str_siege_id] + "::" + name_surname)
-        if name_surname[0:len(strasb[str_siege_id])] == strasb[str_siege_id]:
-            # str_all.append(strasb[str_siege_id])
-            str_real_siege = str_siege_id
-
-    if int(str_real_siege) > 0:
-        all_parl_info[parl_id]["STR"] = str_real_siege
-        del strasb[str_real_siege]
-    else :
-        print("WARNING")
-
-print(all_parl_info)
-
-# print(parsed_xml.meps)
-
-
-# pdf_name = "/home/morgan/Documents/EP_project/PLAN_BRU.pdf"
-
-# pdfobject=open(pdf_name,'rb')
-# pdf = pypdf.PdfReader(pdfobject)
-
-# print(get_parl_place_bru(pdf))
-
-
-# pdf_name = "/home/morgan/Documents/EP_project/PLAN_STR.pdf"
-
-# pdfobject=open(pdf_name,'rb')
-# pdf = pypdf.PdfReader(pdfobject)
-
-
-
-# page = pdf.pages[0]
-# text = page.extract_text(0)
-# test = re.sub("[\t\r ]+","", text)
-
-# place_in_parl = {}
-
-# for pouet in re.findall("[^\d.]+\.+\d+", test):
-#     place_in_parl[re.sub("\n", "", pouet.split(".")[0])] = pouet.split(".")[-1]
-
-# print(place_in_parl)
-
-
-
-
-## Parlement list website ##
-# https://www.europarl.europa.eu/meps/en/full-list/xml/
-
-
-# print(test)
+if __name__ == "__main__":
+    filepath_transco = "../EP_project/transco/"
+    info_parl = get_parl_info()
+    print(info_parl)

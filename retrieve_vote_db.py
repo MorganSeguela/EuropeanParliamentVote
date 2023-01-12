@@ -81,6 +81,7 @@ def get_vote_informations(vote_node, source_url):
             id: (string) -- vote identifier
             date: (string) -- vote date
             description: (string) -- text description
+            reference (string) -- reference of the text
             forCount: (int) -- number of vote for "For"
             forDetails: (dict) -- details of voter for "For"
             againstCount: (int) -- number of vote for "Against"
@@ -92,10 +93,13 @@ def get_vote_informations(vote_node, source_url):
     vote_info = {}
     vote_info["url"] = source_url
     vote_info["id"] = vote_node["Identifier"]
-    vote_info["date"] = vote_node["Date"] 
+    vote_info["date"] = vote_node["Date"]
+    vote_info["reference"] = None
 
     for vote_details in vote_node.children:
         if re.search("Description.Text", vote_details.name):
+            if vote_details.a:
+                vote_info["reference"] = vote_details.a["href"].split("/")[1]
             vote_info["description"] = vote_details.string
 
         if re.search("Result.For", vote_details.name):
