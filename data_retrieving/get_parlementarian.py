@@ -6,6 +6,8 @@ import re
 import requests as rq
 import io
 
+import json
+
 # URL of bruxell's plan
 bru_plan_url = "https://www.europarl.europa.eu/sedcms/pubfile/HEMICYCLE/PLAN_BRU.pdf"
 # URL of strasbourg's plan
@@ -107,4 +109,7 @@ def get_parl_info(filepath_transco = "../EP_project/transco/"):
 if __name__ == "__main__":
     filepath_transco = "../EP_project/transco/"
     info_parl = get_parl_info()
-    print(info_parl)
+    
+    json_filename = "tmp/Parlementarian_011723.json"
+    with open(json_filename, "w") as json_file:
+        json.dump(info_parl,json_file)
