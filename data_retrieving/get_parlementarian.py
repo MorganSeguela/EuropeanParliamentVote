@@ -6,6 +6,8 @@ import re
 import requests as rq
 import io
 
+from datetime import datetime
+
 import json
 
 # URL of bruxell's plan
@@ -44,7 +46,7 @@ def get_parl_place(plan_pdf):
     return place_in_parl
 
 
-def get_all_parl_place():
+def get_all_parl_place(save_dir = "../EP_project/"):
     """Get place number of parliementary for each plan
 
     Returns:
@@ -60,10 +62,31 @@ def get_all_parl_place():
     str_plan_mem = io.BytesIO(str_plan_web.content)
     str_plan_pdf = pypdf.PdfReader(str_plan_mem)
 
+    string_date = datetime.today().strftime("%y%m%d")
+    with open(save_dir + "map/PLAN_BRU_"+ string_date + ".pdf", "wb") as save_bru:
+        save_bru.write(bru_plan_web.content)
+    
+    with open(save_dir + "map/PLAN_STR_"+ string_date + ".pdf", "wb") as save_str:
+        save_str.write(str_plan_web.content)
+
     all_plan["BRU"] = get_parl_place(bru_plan_pdf)
     all_plan["STR"] = get_parl_place(str_plan_pdf)
 
     return all_plan
+
+def get_parl_main_info():
+    parl_info = {}
+
+    parl_list_xml = rq.get(parl_list_url)
+    parl_parsed_xml = bs(parl_list_xml.content, "xml")
+
+    for parl_pers in parl_parsed_xml.meps.children:
+        id = parl_pers.id.string
+        parl_info[id] = {}
+        for info in parl_pers.children:
+            if info.name != "id":
+                parl_info[id][info.name] = info.string
+    return parl_info
 
 
 def get_parl_info(filepath_transco = "../EP_project/transco/"):
@@ -91,13 +114,14 @@ def get_parl_info(filepath_transco = "../EP_project/transco/"):
             if info.name != "id":
                 parl_info[id][info.name] = info.string
     
-    with open(filepath_transco + "corrected_transco_parl_bru.csv", "r") as transco_bru:
+    string_date = datetime.today().strftime("%y%m%d")
+    with open(filepath_transco + "corrected_transco_parl_bru_" + string_date + ".csv", "r") as transco_bru:
         transco_bru.readline()
         for transco_line in transco_bru.readlines():
             parl_id, siege_id, name_surname, siege_name = re.sub("\n", "", transco_line).split(",")
             parl_info[parl_id]["BRU_siege"] = siege_id
 
-    with open(filepath_transco + "corrected_transco_parl_str.csv", "r") as transco_str:
+    with open(filepath_transco + "corrected_transco_parl_str_" + string_date + ".csv", "r") as transco_str:
         transco_str.readline()
         for transco_line in transco_str.readlines():
             parl_id, siege_id, name_surname, siege_name = re.sub("\n", "", transco_line).split(",")
@@ -110,6 +134,7 @@ if __name__ == "__main__":
     filepath_transco = "../EP_project/transco/"
     info_parl = get_parl_info()
     
-    json_filename = "tmp/Parlementarian_011723.json"
+    string_date = datetime.today().strftime("%y%m%d")
+    json_filename = "tmp/Parlementarian_"+ string_date + ".json"
     with open(json_filename, "w") as json_file:
         json.dump(info_parl,json_file)

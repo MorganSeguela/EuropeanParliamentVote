@@ -1,4 +1,5 @@
 import get_parlementarian as gp
+from datetime import datetime
 
 def get_transco_info_siege():
 
@@ -6,7 +7,7 @@ def get_transco_info_siege():
     brux = parl_place["BRU"].copy()
     strasb = parl_place["STR"].copy()
     
-    parl_info = gp.get_parl_info()
+    parl_info = gp.get_parl_main_info()
     
     bru_ids_sieges = {}
     bru_not_found = {}
@@ -53,32 +54,33 @@ def get_transco_info_siege():
 
 if __name__ == "__main__":
 
-    pathfile = "/home/morgan/Documents/EP_project/transco/"
+    pathfile = "../EP_project/transco/"
 
     all_transco = get_transco_info_siege()
 
     bru_ids_sieges, bru_not_found = all_transco["BRU"]
     str_ids_sieges, str_not_found = all_transco["STR"]
 
-    with open(pathfile + "transco_parl_bru.csv", "w") as bru_csv:
+    string_date = datetime.today().strftime("%y%m%d")
+    with open(pathfile + "transco_parl_bru_" + string_date + ".csv", "w") as bru_csv:
         bru_csv.write("parl_id,siege_id,name_surname,name_pdf\n")
         for parl_id in bru_ids_sieges.keys():
             bru_info = bru_ids_sieges[parl_id]
             bru_csv.write(str(parl_id) + "," + ",".join(bru_info) + "\n")
 
-    with open(pathfile + "fail_transco_parl_bru.csv", "w") as bru_csv:
+    with open(pathfile + "fail_transco_parl_bru_" + string_date + ".csv", "w") as bru_csv:
         bru_csv.write("parl_id,name_surname\n")
         for parl_id in bru_not_found.keys():
             bru_name = bru_not_found[parl_id]
             bru_csv.write(str(parl_id) + "," + bru_name + "\n")
 
-    with open(pathfile + "transco_parl_str.csv", "w") as str_csv:
+    with open(pathfile + "transco_parl_str_" + string_date + ".csv", "w") as str_csv:
         str_csv.write("parl_id,siege_id,name_surname,name_pdf\n")
         for parl_id in str_ids_sieges.keys():
             str_info = str_ids_sieges[parl_id]
             str_csv.write(str(parl_id) + "," + ",".join(str_info) + "\n")
 
-    with open(pathfile + "fail_transco_parl_str.csv", "w") as str_csv:
+    with open(pathfile + "fail_transco_parl_str_" + string_date + ".csv", "w") as str_csv:
         str_csv.write("parl_id,name_surname\n")
         for parl_id in str_not_found.keys():
             str_name = str_not_found[parl_id]

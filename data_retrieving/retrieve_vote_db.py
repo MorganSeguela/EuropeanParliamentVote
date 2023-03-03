@@ -169,15 +169,17 @@ def get_all_vote_url(agenda_url):
             if tchild.name == "h4":
                 day = re.sub("[\t\r\n]+","", tchild.string)
                 isH4 = False
+                print(day)
 
             elif tchild.name == "ul":
-                vote_url = tchild.li.span.find_all("a")[1]['href']
-                isH4 = True
+                if tchild.li.span != None:
+                    vote_url = tchild.li.span.find_all("a")[1]['href']
+                    isH4 = True
 
-                if re.search("\.xml",vote_url):
-                    info = vote_url
-                else: 
-                    print("Il y a un pb avec XML")
+                    if re.search("\.xml",vote_url):
+                        info = vote_url
+                    else: 
+                        print("Il y a un pb avec XML")
             else:
                 if tchild.name != None:
                     print(str(tchild.name) + "inconnu")
@@ -196,7 +198,7 @@ if __name__ == "__main__":
     main_vote_html = "https://www.europarl.europa.eu/plenary/fr/votes.html?tab=votes"
 
     dict_day_url = get_all_vote_url(main_vote_html)
-
+    print(dict_day_url)
     for key_date in dict_day_url.keys():
         print(key_date)
         current_date_url = dict_day_url[key_date]
