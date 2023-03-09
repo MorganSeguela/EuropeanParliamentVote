@@ -8,6 +8,7 @@ Version:
 */
 
 DROP TABLE IF EXISTS project.votes;
+DROP TABLE IF EXISTS project.sits_on;
 
 DROP TABLE IF EXISTS project.parliamentarian;
 DROP TABLE IF EXISTS project.political_group;
@@ -127,33 +128,33 @@ COMMENT ON TABLE project.parliament
 
 
 -- Table: project.Seat
-CREATE TABLE IF NOT EXISTS project.seat
+CREATE TABLE project.seat
 (
-    seat_id integer NOT NULL,
-    seat_xpos integer NOT NULL,
-    seat_ypos integer NOT NULL,
-    square_size_x integer NOT NULL,
-    square_size_y integer NOT NULL,
-    use character varying(16) COLLATE pg_catalog."default" NOT NULL,
-    parliament_id integer NOT NULL,
+    seat_id integer,
+    seat_number integer,
+    seat_xpos integer,
+    seat_ypos integer,
+    square_size_x integer,
+    square_size_y integer,
+    use character varying(16),
+    parliament_id integer,
     CONSTRAINT pk_seat PRIMARY KEY (seat_id),
     CONSTRAINT fk_seat_parliament FOREIGN KEY (parliament_id)
         REFERENCES project.parliament (parliament_id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
-)
+        NOT VALID
+);
 
-TABLESPACE pg_default;
-
-ALTER TABLE IF EXISTS project.seat
+ALTER TABLE IF EXISTS project.new_seat
     OWNER to postgres;
 
 GRANT SELECT ON TABLE project.seat TO PUBLIC;
 
 GRANT ALL ON TABLE project.seat TO postgres;
-
-COMMENT ON TABLE project.seat
-    IS 'Seat where parliamentarian is on';
+    
+COMMENT ON TABLE project.new_seat
+    IS 'seats of each parliament';
 
 -- Table: project.Parliamentarian
 CREATE TABLE IF NOT EXISTS project.parliamentarian
@@ -186,6 +187,38 @@ GRANT ALL ON TABLE project.parliamentarian TO postgres;
 COMMENT ON TABLE project.parliamentarian
     IS 'Member of parliamentary';
 
+    
+-- Table: project.sits_on
+
+CREATE TABLE IF NOT EXISTS project.sits_on
+(
+    parliamentarian_id integer NOT NULL,
+    seat_id integer NOT NULL,
+    date date NOT NULL,
+    CONSTRAINT pk_sits_on PRIMARY KEY (parliamentarian_id, seat_id, date),
+    CONSTRAINT fk_sits_on_parliamentarian FOREIGN KEY (parliamentarian_id)
+        REFERENCES project.parliamentarian (parliamentarian_id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_sits_on_seat FOREIGN KEY (seat_id)
+        REFERENCES project.new_seat (seat_id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS project.sits_on
+    OWNER to postgres;
+
+GRANT SELECT ON TABLE project.sits_on TO PUBLIC;
+
+GRANT ALL ON TABLE project.sits_on TO postgres;
+
+COMMENT ON TABLE project.sits_on
+    IS 'Seat parliamentarian sits on';    
+    
+    
 -- Table: project.votes
 CREATE TABLE IF NOT EXISTS project.votes
 (
