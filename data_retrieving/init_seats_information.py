@@ -1,11 +1,21 @@
+#!/usr/bin/env python3
+
+# Log package
 import logging
 
+# Access and Parse packages 
 from selenium import webdriver
-from time import sleep
 from bs4 import BeautifulSoup as bs
+
+from time import sleep
 
 
 class seat_available_info:
+    """Class of seat information not gathered
+
+    Raises:
+        Exception: The init input does not correspond to expected ones
+    """
     parl_council_seat_id = {
         "bru": [
             1, 2,
@@ -51,6 +61,14 @@ class seat_available_info:
     }
 
     def __init__(self, parl_abrv):
+        """Initialize which parliament is taken into account.
+
+        Args:
+            parl_abrv (str): "str" (Strasbourg) or "bru" (Brussels)
+
+        Raises:
+            Exception: The init input does not correspond to expected ones
+        """
         self.council_seat_id = self.parl_council_seat_id[parl_abrv]
         self.commission_seat_id = self.parl_commission_seat_id[parl_abrv]
 
@@ -68,6 +86,14 @@ class seat_available_info:
             raise Exception("Parliament abreviation should be \"str\" for Strasbourg or \"bru\" for Brussels, you wrote: " + parl_abrv)
     
     def seat_use(self, seat_id):
+        """Given a seat id, retrieve the use of the seat
+
+        Args:
+            seat_id (int): seat id
+
+        Returns:
+            str: Usage of the seat between "Council", "Commission", "Parliamentarian"
+        """
         if seat_id in self.council_seat_id:
             return "Council"
         elif seat_id in self.commission_seat_id:
@@ -77,6 +103,15 @@ class seat_available_info:
 
 
 def retrieve_page_source(url):
+    """Access to the given url and retrieve its html.
+    It is worth noting that we use Firefox without headless, to run the javascript to be able to parse the seats map
+
+    Args:
+        url (str): url to the website (here interactive plan)
+
+    Returns:
+        str: html of the given url website
+    """
     fireDriver = webdriver.Firefox()
     fireDriver.get(url)
     sleep(10)
@@ -86,6 +121,16 @@ def retrieve_page_source(url):
     return hemi_node
 
 def parse_seat(html_str):
+    """Parse and retrieve seats information
+
+    Args:
+        html_str (str): String of the html parsed before
+
+    Returns:
+        (vect, dict): 
+            - vect: canvas size (size_x, size_y)
+            - dict: seat_id: [posx, posy]
+    """
     seat_bs = bs(html_str, "html.parser")
     seat_map_canvas = seat_bs.find("div", {"class": "erpl_hemicycle-map-canvas"})
     seat_map_canvas_svg = seat_map_canvas.svg
@@ -105,13 +150,25 @@ def parse_seat(html_str):
 
 
 def gen_all_parl():
+    """Generator of each parliament
+
+    Yields:
+        str: Parliament abbreviation
+    """
     parl_abrvs = ["str", "bru"]
     for val in parl_abrvs:
         yield val
 
 
 if __name__ == '__main__':
+    """
+    Running this file permits to retrieve parliament seats data from the website, and write them in ../tmp/seat_info.csv
+
+    We chose to use selenium with Firefox (without headless option), as it is the easiest way to access data with graphic parameters to execute the javascript in order to be able to retrieve seats map.
+    """
+    
     str_all_data = ""
+
     for parl_abrv in gen_all_parl():
         cur_url = "https://www.europarl.europa.eu/erpl-public/hemicycle/index.htm?lang=en&loc={}#".format(parl_abrv)
 
@@ -136,28 +193,4 @@ if __name__ == '__main__':
         seat_file.write(str_all_data)
 
     logging.warning("Retrieving Done")
-    # url_seat_info_str = "https://www.europarl.europa.eu/erpl-public/hemicycle/index.htm?lang=en&loc=str#"
-    # url_seat_info_bru = "https://www.europarl.europa.eu/erpl-public/hemicycle/index.htm?lang=en&loc=bru#"
-    
-    # str_seat_info_bru = retrieve_page_source(url_seat_info_bru)
-    # canvas_size, seat_info = parse_seat(str_seat_info_bru)
-
-    # parl_info = seat_available_info("str")
-
-    # all_data = []
-
-    # for seat_id in seat_info.keys():
-    #     valx, valy = seat_info[seat_id]
-    #     seat_use = parl_info.seat_use(seat_id=seat_id)
-    #     all_data.append(
-    #         [
-    #         str(seat_id), valx, valy, 
-    #         canvas_size[0], canvas_size[1],
-    #         seat_use, parl_info.parliament_id
-    #         ]
-    #     )
-    # print(all_data)
-    
-
-
 
