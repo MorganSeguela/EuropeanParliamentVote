@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# Version: V0.2
+# Author : Morgan Séguéla
+
 # Log package
 import logging
 
@@ -120,6 +123,7 @@ def retrieve_page_source(url):
 
     return hemi_node
 
+
 def parse_seat(html_str):
     """Parse and retrieve seats information
 
@@ -150,7 +154,7 @@ def parse_seat(html_str):
 
 
 def gen_all_parl():
-    """Generator of each parliament
+    """Generator of each parliament abbreviation
 
     Yields:
         str: Parliament abbreviation
@@ -160,6 +164,55 @@ def gen_all_parl():
         yield val
 
 
+def regroup_all_seats_data():
+    """Retrieve seats information from the parliament interactive plan.
+    Parse seats html to retrieve seat (x,y) positions and the canvas size (width, height).
+    Each seat is a vector (id, posx, posy, width, height, seat_use, parliament_id),
+    stored in a list of seats.
+
+    Returns:
+        List[Vect()]: List of Seats informations: [(id, posx, posy, width, height, seat_use, parliament_id)]
+    """
+    all_data = []
+    for parl_abrv in gen_all_parl():
+            cur_url = "https://www.europarl.europa.eu/erpl-public/hemicycle/index.htm?lang=en&loc={}#".format(parl_abrv)
+
+            logging.warning("Retrieving data from:\n{}\nDo not touch anything".format(cur_url))
+
+            str_seat_info = retrieve_page_source(cur_url)
+            canvas_size, seat_info = parse_seat(str_seat_info)
+
+            parl_info = seat_available_info(parl_abrv)
+
+            for seat_id in seat_info.keys():
+                valx, valy = seat_info[seat_id]
+                seat_use = parl_info.seat_use(seat_id=seat_id)
+                cur_data=[
+                    str(seat_id), valx, valy, 
+                    canvas_size[0], canvas_size[1],
+                    seat_use, str(parl_info.parliament_id)
+                ]
+                all_data.append(cur_data)
+    return all_data
+
+
+def write_data_in_file(all_data, filepath):
+    """Write seat data in a file.
+
+    Args:
+        all_data (List[Vect()]): List of Seats information
+        filepath (str): Filepath where to write data
+    """
+    str_all_data = ""
+
+    for seat_data in all_data:
+        str_all_data += ",".join(seat_data) + "\n"
+    
+    with open(filepath, "w") as seat_file:
+        seat_file.write(str_all_data)
+    
+
+
 if __name__ == '__main__':
     """
     Running this file permits to retrieve parliament seats data from the website, and write them in ../tmp/seat_info.csv
@@ -167,30 +220,6 @@ if __name__ == '__main__':
     We chose to use selenium with Firefox (without headless option), as it is the easiest way to access data with graphic parameters to execute the javascript in order to be able to retrieve seats map.
     """
     
-    str_all_data = ""
-
-    for parl_abrv in gen_all_parl():
-        cur_url = "https://www.europarl.europa.eu/erpl-public/hemicycle/index.htm?lang=en&loc={}#".format(parl_abrv)
-
-        logging.warning("Retrieving data from:\n{}\nDo not touch anything".format(cur_url))
-
-        str_seat_info = retrieve_page_source(cur_url)
-        canvas_size, seat_info = parse_seat(str_seat_info)
-
-        parl_info = seat_available_info(parl_abrv)
-
-        for seat_id in seat_info.keys():
-            valx, valy = seat_info[seat_id]
-            seat_use = parl_info.seat_use(seat_id=seat_id)
-            cur_data=[
-                str(seat_id), valx, valy, 
-                canvas_size[0], canvas_size[1],
-                seat_use, str(parl_info.parliament_id)
-            ]
-            str_all_data += ",".join(cur_data) + "\n"
-            
-    with open("tmp/seat_info.csv", "w") as seat_file:
-        seat_file.write(str_all_data)
-
+    seats_data = regroup_all_seats_data()
+    write_data_in_file(seats_data, "tmp/seat_info.csv")
     logging.warning("Retrieving Done")
-
