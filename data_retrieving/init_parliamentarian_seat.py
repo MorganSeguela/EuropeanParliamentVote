@@ -145,10 +145,10 @@ if __name__ == "__main__":
         cur_url = "https://www.europarl.europa.eu/sedcms/pubfile/HEMICYCLE/{}.pdf".format(parl_plan)
         plan_content = retrieve_plan_pdf(cur_url)
 
-        save_pdf_filepath = "tmp/" + parl_plan + "_{}.pdf".format(datetime.today().strftime("%y%m%d"))
+        save_pdf_filepath = "tmp/stage_1/" + parl_plan + "_{}.pdf".format(datetime.today().strftime("%y%m%d"))
         store_current_plan(plan_html_content=plan_content, filepath=save_pdf_filepath)
 
 
         place_date, parl_seat_data = parse_plan_pdf(plan_content)
-        filepath = "tmp/parl_" + parl_plan + "_{}.csv".format(datetime.strptime(place_date, "%d.%m.%Y").strftime("%y%m%d"))
+        filepath = "tmp/stage_1/parl_" + parl_plan + "_{}.csv".format(datetime.strptime(place_date, "%d.%m.%Y").strftime("%y%m%d"))
         store_parl_seat_data(parl_seat_data, filepath)

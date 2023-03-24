@@ -77,6 +77,6 @@ if __name__ == '__main__':
     parl_list_xml = retrieve_parl_xml(parl_list_url)
     data_parl = parse_parl_info(parl_list_xml)
 
-    write_filepath = "tmp/parliamentarian_main_info_{}.json".format(datetime.today().strftime("%y%m%d"))
+    write_filepath = "tmp/stage_1/parliamentarian_main_info_{}.json".format(datetime.today().strftime("%y%m%d"))
     write_parl_data(data_parl, write_filepath)
     logging.warning("Retrieving Done")

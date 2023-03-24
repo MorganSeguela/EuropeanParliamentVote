@@ -221,5 +221,5 @@ if __name__ == '__main__':
     """
     
     seats_data = regroup_all_seats_data()
-    write_data_in_file(seats_data, "tmp/seat_info.csv")
+    write_data_in_file(seats_data, "tmp/stage_1/seat_info.csv")
     logging.warning("Retrieving Done")
