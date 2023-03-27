@@ -14,6 +14,9 @@ import requests as rq
 # Regex package
 import re
 
+# Directory Management
+import os
+
 
 def retrieve_agenda_html(agenda_url):
     """Retrieve the European Parliament agenda website
@@ -117,11 +120,12 @@ def gen_stage():
     Yields:
         str: Directory name between "stage_1", "stage_2"
     """
+
     all_stages = ["stage_1", "stage_2"]
     for stage in all_stages:
         yield stage
 
-def write_days_urls_data(list_vect_data, filepath):
+def write_days_urls_data(parsed_planning_filepath, write_filepath, list_vect_data):
     """Write in a file the retrieved data
 
     Args:
@@ -130,9 +134,14 @@ def write_days_urls_data(list_vect_data, filepath):
     """
     already_parsed = []
     
-    for cur_stage in gen_stage():
-        cur_filepath = "tmp/{}/{}".format(cur_stage,filepath)
-        with open(cur_filepath, "r") as read_file:
+    parsed_filepath = "tmp/stage_1/{}".format(parsed_planning_filepath)
+    if os.path.isfile(parsed_filepath):
+        with open(parsed_filepath, "r") as read_file:
+            already_parsed.extend([data_str.rstrip().split(",")[0] for data_str in read_file.readlines()])
+
+    new_filepath = "tmp/stage_1/{}".format(write_filepath)
+    if os.path.isfile(new_filepath):
+        with open(new_filepath, "r") as read_file:
             already_parsed.extend([data_str.rstrip().split(",")[0] for data_str in read_file.readlines()])
 
     already_parsed
@@ -142,7 +151,7 @@ def write_days_urls_data(list_vect_data, filepath):
         if vect_data[0] not in already_parsed: 
             str_all_data += ",".join(vect_data) + "\n"
 
-    with open(filepath, "a") as write_file:
+    with open(write_filepath, "a") as write_file:
         write_file.write(str_all_data)
     
 
@@ -152,5 +161,7 @@ if __name__ == "__main__":
     agenda_html = retrieve_agenda_html(agenda_url)
     all_data = retrieve_planning_urls(agenda_html)
 
-    filepath = "days_url_vote.csv"
-    write_days_urls_data(all_data, filepath)
+    
+    write_planning_filepath = "first_days_url_vote.csv"
+    parsed_planning_filepath = "parsed_days_url_vote.csv"
+    write_days_urls_data(parsed_planning_filepath, write_planning_filepath, all_data)
