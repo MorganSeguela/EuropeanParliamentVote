@@ -62,6 +62,14 @@ def gen_src_list(already_considered, src_dir="tmp/stage_1/"):
 
 
 def retrieve_text_name(text_url):
+    """Retrieve text name from EP website
+
+    Args:
+        text_url (str): url to text information
+
+    Returns:
+        str: Text name
+    """
     parsed_website = bs(rq.get(text_url).content, "html.parser")
     main_text_title = parsed_website.findAll(attrs={"class": "erpl_title-h1"})[0].text
     return main_text_title
