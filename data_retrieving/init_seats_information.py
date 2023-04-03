@@ -3,6 +3,8 @@
 # Version: V0.2
 # Author : Morgan Séguéla
 
+# The goal of this program is to retrieve seat information to draw them
+
 # Log package
 import logging
 

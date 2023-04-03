@@ -3,6 +3,9 @@
 # Version: V0.2
 # Author : Morgan Séguéla
 
+# The goal of this program is to retrieve parliament plan with parliamentarian
+# We retrieve seat number and the parliamentarian name associated
+
 # Log package
 import logging
 

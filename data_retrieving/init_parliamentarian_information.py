@@ -3,6 +3,9 @@
 # Version: V0.2
 # Author : Morgan Séguéla
 
+# The goal of this program is to retrieve parliamentarian information
+# including, their name, country, political group european and nation wide
+
 # Log package
 import logging
 

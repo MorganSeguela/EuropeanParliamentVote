@@ -3,6 +3,10 @@
 # Version: V0.2
 # Author : Morgan Séguéla
 
+# The goal of this program is to retrieve text information. 
+# Ulitmately the content of the text, amendments and so on 
+# For now only the url to the text
+
 # To do: Retrieve and parse data from text
 
 # File management package
@@ -15,7 +19,7 @@ import json
 import requests as rq
 
 # Parsing package (for the future)
-# from bs4 import BeautifulSoup as bs
+from bs4 import BeautifulSoup as bs
 
 def already_considered_ref(src_file):
     """Retrieved all parsed reference
@@ -57,6 +61,12 @@ def gen_src_list(already_considered, src_dir="tmp/stage_1/"):
                     yield text_ref
 
 
+def retrieve_text_name(text_url):
+    parsed_website = bs(rq.get(text_url).content, "html.parser")
+    main_text_title = parsed_website.findAll(attrs={"class": "erpl_title-h1"})[0].text
+    return main_text_title
+
+
 def write_text_data(texts_info, filepath):
     """Write retrieved data
 
@@ -79,7 +89,9 @@ if __name__ == "__main__":
     all_data = []
     already_considered = already_considered_ref(write_pathfile)
     for text_ref in gen_src_list(already_considered):
-        all_data.append((text_ref, url_template.format(text_ref)))
+        text_url = url_template.format(text_ref)
+        text_name = retrieve_text_name(text_url)
+        all_data.append((text_ref, text_name, text_url))
     write_text_data(all_data, write_pathfile)
 
 

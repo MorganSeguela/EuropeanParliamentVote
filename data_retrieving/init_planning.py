@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
-# Version: V0.1
+# Version: V0.2
 # Author : Morgan Séguéla
+
+# The goal of this program is to retrieve the planning from the European Parliament website
+# It retrieves the day and the URL to the xml minute
 
 # To do: Trying to retrieve planning from the calendar in the website
 
@@ -114,6 +117,7 @@ def retrieve_planning_urls(agenda_content):
         all_url_agenda.extend(retrieve_day_url(week))
     return all_url_agenda
 
+
 def gen_stage():
     """Stage directory generator
 
@@ -124,6 +128,7 @@ def gen_stage():
     all_stages = ["stage_1", "stage_2"]
     for stage in all_stages:
         yield stage
+
 
 def write_days_urls_data(parsed_planning_filepath, write_filepath, list_vect_data):
     """Write in a file the retrieved data
@@ -161,7 +166,6 @@ if __name__ == "__main__":
     agenda_html = retrieve_agenda_html(agenda_url)
     all_data = retrieve_planning_urls(agenda_html)
 
-    
-    write_planning_filepath = "first_days_url_vote.csv"
     parsed_planning_filepath = "parsed_days_url_vote.csv"
+    write_planning_filepath = "first_days_url_vote.csv"
     write_days_urls_data(parsed_planning_filepath, write_planning_filepath, all_data)

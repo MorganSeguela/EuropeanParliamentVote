@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 # Version: V0.2
-# Author : V0.2
+# Author : Morgan Séguéla
+
+# The goal of this program is to retrieve votes informations from the votes xml in planning.
 
 # File and Directory management
 import os
@@ -211,8 +213,8 @@ def write_vote_data(vote_data, tgt_pathfile):
 
 
 if __name__ == "__main__":
-    src_file_path = "tmp/stage_1/days_url_vote.csv"
-    tgt_file_path = "tmp/stage_2/days_url_vote.csv"
+    src_file_path = "tmp/stage_1/first_days_url_vote.csv"
+    tgt_file_path = "tmp/stage_1/parsed_days_url_vote.csv"
     days_urls = retrieve_day_url(src_file_path, tgt_file_path)
 
     for day_url in days_urls:
