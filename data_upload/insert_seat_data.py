@@ -11,6 +11,9 @@ import db_tools as db
 # Log packges
 import logging
 
+import os
+
+from datetime import datetime
 
 def retrieve_parliament_data():
     """Parliament data (id, name, abbreviation)
@@ -23,19 +26,23 @@ def retrieve_parliament_data():
         yield one_parl
 
 
-def insert_parliament_data():
+def insert_parliament_data(isApply=False):
     """Insert parliament data in DB
+
+    Args:
+        isApply (bool, optional): Apply insert in DB. Defaults to False.
     """
     logging.info("Inserting parliament data in DB...")
     insert_parliament_string = ""
 
     for one_parl in retrieve_parliament_data():
         insert_parliament_string += "INSERT INTO project.parliament\n\tVALUES ({0}, \'{1}\', \'{2}\');\n".format(*one_parl)
-    insert_parliament_string += "COMMIT:"
+    insert_parliament_string += "COMMIT;"
 
-    print(insert_parliament_string)
-
-    # db.query_db(insert_parliament_string)
+    if isApply:
+        db.query_db(insert_parliament_string)
+    else:
+        print(insert_parliament_string)
 
     logging.info("Parliament data successfully inserted")
 
@@ -60,7 +67,12 @@ def retrieve_seat_data():
         yield one_seat
 
 
-def insert_seat_data():
+def insert_seat_data(isApply=False):
+    """Insert seat data in DB
+
+    Args:
+        isApply (bool, optional): Apply insert in DB. Defaults to False.
+    """
     logging.info("Inserting seat data in DB...")
     insert_seat_string = ""
     for one_seat in retrieve_seat_data():
@@ -68,12 +80,56 @@ def insert_seat_data():
         insert_seat_string += "INSERT INTO project.seat\n\tVALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7});\n".format(*one_seat)
     
     insert_seat_string += "COMMIT;"
-    print(insert_seat_string)
-    # db.query_db(insert_seat_string)
+
+    if isApply:
+        db.query_db(insert_seat_string)
+    else:
+        print(insert_seat_string)
+        
     logging.info("Seat data successfully inserted")
 
 
+def gen_sits_transco_file():
+    start_dir = "tmp/stage_2/"
+    transco_files_list = [this_file for this_file in os.listdir(start_dir) if "transco_" in this_file]
+
+    for one_file in transco_files_list:
+        yield start_dir + one_file
+
+
+def insert_sits_on_data(isApply=False):
+    """Insert sits on data in DB
+
+    Args:
+        isApply (bool, optional): Apply insert in DB. Defaults to False.
+    """
+    logging.info("Inserting Sits on data in DB...")
+
+    sits_on_data = []
+    for transo_file in gen_sits_transco_file():
+        parsed_data = datetime.strftime(datetime.strptime(transo_file.split(".")[0].split("_")[-1], "%y%m%d"), "%Y-%m-%d")
+        parliaments = ["BRU", "STR"]
+        parliament_id = parliaments.index(transo_file.split("/")[-1].split(".")[0].split("_")[1])*1000
+        cur_data = []
+        with open(transo_file, "r") as transco_content:
+            cur_data = [[int(this_line.rstrip().split(",")[0]), str(parliament_id + int(this_line.rstrip().split(",")[3])), db.handle_str_sql(parsed_data)] for this_line in transco_content.readlines()]
+        sits_on_data.extend(cur_data)
+    
+    insert_sits_on_string = ""
+    for one_pair in sits_on_data:
+        insert_sits_on_string += "INSERT INTO project.sits_on\n\tVALUES ({0}, {1}, {2});\n".format(*one_pair)
+    insert_sits_on_string += "COMMIT;"
+
+    if isApply:
+        db.query_db(insert_sits_on_string)
+    else:
+        print(insert_sits_on_string)
+        
+    logging.info("Sits on data successfully inserted")
+
 if __name__ == "__main__":
-    insert_parliament_data()
-    insert_seat_data()
+    isApply= True
+    insert_parliament_data(isApply)
+    insert_seat_data(isApply)
+    insert_sits_on_data(isApply)
 

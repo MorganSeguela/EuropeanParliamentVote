@@ -162,7 +162,7 @@ def write_item_list(filepath, list_data):
     """
     csv_text = ""
     for dt_index in range(len(list_data)):
-        csv_text += "{}, {}\n".format(str(dt_index), list_data[dt_index])
+        csv_text += "{},{}\n".format(str(dt_index), list_data[dt_index])
     with open(filepath, "w") as csv_file:
         csv_file.write(csv_text)
 
