@@ -14,6 +14,8 @@ import os
 # Retrieve today date and transform it in string value
 from datetime import datetime
 
+import db_tools as db
+
 
 def parl_data_file():
     """Retrieve parliamentarian data file paths
@@ -43,6 +45,20 @@ def parse_parl_file():
     return parl_data
 
 
+def get_pg_db():
+    query_str = "SELECT pg_id, pg_name\nFROM project.political_group\nORDER BY pg_id;"
+
+    res_pg = db.query_db(query_str)
+
+    pg = []
+
+    for tuple in res_pg:
+        pg.append(tuple[1])
+    
+    return pg
+
+
+
 def pg_created_file():
     """Retrieve data from political group data to get abbreviation
 
@@ -50,10 +66,22 @@ def pg_created_file():
         List[List]: List of political group and their abbreviation
     """
     pg_file = "tmp/stage_1/created_political_group_data.csv"
-    pg_data = []
+    pg_data = get_pg_db()
     with open(pg_file, "r") as pg_file:
         pg_data = [pg_line.rstrip().split(",") for pg_line in pg_file.readlines()]
     return pg_data
+
+
+def get_country_db():
+    query_str = "SELECT country_id, country_name\nFROM project.country\nORDER BY country_id;"
+
+    res_ctr = db.query_db(query_str)
+
+    country = []
+    for tuple in res_ctr:
+        country.append(tuple[1])
+    
+    return country
 
 
 def extract_country(parl_data):
@@ -65,14 +93,26 @@ def extract_country(parl_data):
     Returns:
         (dict, list): result of replacement and list of countries
     """
-    country_found = []
+    country_found = get_country_db()
     for one_parl in parl_data.keys():
         this_country = parl_data[one_parl]["country"]
         if this_country not in country_found:
             country_found.append(this_country)
         parl_data[one_parl]["country"] = country_found.index(this_country)
     return (parl_data, country_found)
-            
+
+
+def get_npg_db():
+    query_str = "SELECT npg_id, npg_name\nFROM project.national_political_group ORDER BY npg_id;"
+
+    res_npg = db.query_db(query_str)
+
+    npg = []
+    for tuple in res_npg:
+        npg.append(tuple[1])
+    
+    return npg
+
 
 def extract_npg(parl_data):
     """Extract national political group and replace it in dictionary
@@ -83,7 +123,7 @@ def extract_npg(parl_data):
     Returns:
         (dict, list): result of replacement and list of national political groups
     """
-    npg_found = []
+    npg_found = get_npg_db()
     for one_parl in parl_data.keys():
         this_npg = parl_data[one_parl]["nationalPoliticalGroup"]
         if this_npg not in npg_found:

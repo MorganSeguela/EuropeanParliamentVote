@@ -76,7 +76,7 @@ def insert_seat_data(isApply=False):
     logging.info("Inserting seat data in DB...")
     insert_seat_string = ""
     for one_seat in retrieve_seat_data():
-        one_seat[6] = "\'{}\'".format(one_seat[5])
+        one_seat[6] = "\'{}\'".format(one_seat[6])
         insert_seat_string += "INSERT INTO project.seat\n\tVALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7});\n".format(*one_seat)
     
     insert_seat_string += "COMMIT;"
@@ -90,6 +90,11 @@ def insert_seat_data(isApply=False):
 
 
 def gen_sits_transco_file():
+    """Generator of transcodification files
+
+    Yields:
+        str: data filepath
+    """
     start_dir = "tmp/stage_2/"
     transco_files_list = [this_file for this_file in os.listdir(start_dir) if "transco_" in this_file]
 
@@ -128,8 +133,8 @@ def insert_sits_on_data(isApply=False):
     logging.info("Sits on data successfully inserted")
 
 if __name__ == "__main__":
-    isApply= True
+    isApply= False
     insert_parliament_data(isApply)
     insert_seat_data(isApply)
-    insert_sits_on_data(isApply)
+    insert_sits_on_data(True)
 

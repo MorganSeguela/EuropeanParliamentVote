@@ -14,6 +14,7 @@ import os
 # Date time package for filename
 from datetime import datetime
 
+
 def get_db_parl_id():
     """Retrieve Parliamentarian ID are in the database
 
@@ -83,6 +84,7 @@ def ext_int_vote(intention_data):
             intention_res[parl_id] = int_vv
     return intention_res
 
+
 def ext_verify_vote(vote_data, verification):
     """Extract vote for each content id and verify if this content id can be added.
     A Content is considered successfull if all its parliamentarian that voted are in DB and has seat
@@ -112,19 +114,20 @@ def ext_verify_vote(vote_data, verification):
             isInDB = int(parl_id) in parl_db
             whichDate = verify_seat(seat_db, int(parl_id))
 
-            prs_date = [good_date for good_date in whichDate if good_date in prs_date]
+            tmp_prs_date = [good_date for good_date in whichDate if good_date in prs_date]
 
             parl_int = "NULL"
             if parl_id in int_vote.keys():
                 parl_int = int_vote[parl_id]
             
-            if isInDB and prs_date:
+            if isInDB and tmp_prs_date:
                 res.append([parl_id, id_vv, parl_int])
+                prs_date = tmp_prs_date.copy()
             else:
                 IsSuccess = False
                 if not isInDB:
                     tmp_fail["notInDb"].append([parl_id, id_vv, parl_int, voters_dict[parl_id], "Not in database"])
-                if not prs_date:
+                if not tmp_prs_date:
                     tmp_fail["noSeat"].append([parl_id, id_vv, parl_int, voters_dict[parl_id], "Has no seat in DB"])
 
     return (res, tmp_fail, IsSuccess)
@@ -137,31 +140,38 @@ def parse_vote_data(verification):
         verification (List, Dict): List of parliamentarian in DB and dictionary of sit date and parl ID
 
     Returns:
-        (List[List], List[List]): List of successfull data, List of failure data
+        (List[List], List[List]): List of successful data, List of failure data
     """
     res_suc = []
     res_fail = []
+    unique_content = []
     for vote_file in gen_vote_files():
         cur_file = {}
         with open(vote_file, "r") as vote_fc:
             cur_file = json.load(vote_fc)
         for content_id in cur_file.keys():
+            if content_id not in unique_content:
+                unique_content.append(content_id)
+                tmp_res, tmp_fail, isSuccess = ext_verify_vote(cur_file[content_id], verification)
+                if isSuccess:
+                    for tuple in tmp_res:
+                        tuple.insert(1, content_id)
+                        res_suc.append(tuple)
+                else:
+                    notInDBData = tmp_fail["notInDb"]
+                    for tuple in notInDBData:
+                        tuple.insert(1,content_id)
+                        res_fail.append(tuple)
 
-            tmp_res, tmp_fail, isSuccess = ext_verify_vote(cur_file[content_id], verification)
-            if isSuccess:
-                for tuple in tmp_res:
-                    tuple.insert(1, content_id)
-                    res_suc.append(tuple)
-            else:
-                notInDBData = tmp_fail["notInDb"]
-                for tuple in notInDBData:
-                    tuple.insert(1,content_id)
-                    res_fail.append(tuple)
+                    noSeatDB = tmp_fail["noSeat"]
+                    for tuple in noSeatDB:
+                        tuple.insert(1,content_id)
+                        res_fail.append(tuple)
 
-                noSeatDB = tmp_fail["noSeat"]
-                for tuple in noSeatDB:
-                    tuple.insert(1,content_id)
-                    res_fail.append(tuple)
+                    for tuple in tmp_res:
+                        tuple.extend(["",""])
+                        tuple.insert(1,content_id)
+                        res_fail.append(tuple)
     return (res_suc, res_fail)
                     
 
@@ -209,10 +219,19 @@ def write_file(data, isApply=False):
         print(file_content_str)
 
 
-if __name__ == "__main__":
+def orchestrate_update(isApply=False):
+    """Manage verification and data insertion
+
+    Args:
+        isApply (bool, optional): Apply db insert. Defaults to False.
+    """
     parl_in_db = get_db_parl_id()
     db_seat_parl = get_db_seat_parl_id()
     success, fail = parse_vote_data((parl_in_db, db_seat_parl))
-    isApply = True
+    isApply = False
     insert_db(success)
     write_file(fail, isApply)
+
+
+if __name__ == "__main__":
+    orchestrate_update(True)

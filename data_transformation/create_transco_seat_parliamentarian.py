@@ -16,6 +16,8 @@ import json
 import logging
 
 
+import time
+
 import math as m
 
 
@@ -96,7 +98,7 @@ def surname_name_treatment(surname_name):
     Returns:
         string; Cleaned website name  
     """
-    return rem_more_surname(" ".join(surname_name.split(" ")[1:]) + " " + surname_name.split(" ")[0].upper())
+    return " ".join(surname_name.split(" ")[1:]) + " " + surname_name.split(" ")[0].upper()
 
 
 def rem_more_surname(name):
@@ -109,6 +111,7 @@ def rem_more_surname(name):
         string: cleaned name with only upper letters
     """
     result_upper_name = []
+    save_name = name.split(" ").pop()
     for part_name in name.split(" "):
         index_letter = 0
         isupper = True
@@ -120,6 +123,7 @@ def rem_more_surname(name):
                 index_letter += 1
         if index_letter == len(part_name):
             result_upper_name.append(part_name)
+    result_upper_name.append(save_name)
     return " ".join(result_upper_name)
 
 
@@ -181,6 +185,9 @@ def reverse_parl_info(parl_info):
     nb_duplicates = 0
     for parl_id in parl_info.keys():
         name = surname_name_treatment(parl_info[parl_id])
+        if parl_id in ["197556", "124806"]:
+            print("parl_id: {} -- {} => {}".format(parl_id, parl_info[parl_id], name))
+            time.sleep(5)
         if name in reverse_parl_info.keys():
             logging.warning("warning duplicate: {}:{} and {}:{}".format(name, parl_id, name, reverse_parl_info[name]))
             nb_duplicates += 1
