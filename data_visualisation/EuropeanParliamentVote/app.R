@@ -45,6 +45,7 @@ ui <- fluidPage(
     # Application title
     titlePanel("European Parliament Votes"),
     
+    
     sidebarPanel(
         uiOutput("choice_text_id")
     ),
@@ -59,7 +60,10 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-
+    
+    
+    
+    
     sqlOutput = reactive({
         new_con = poolCheckout(cur_pool)
         input_text_id = "SELECT text_id FROM \"project_V01\".text;"
@@ -83,26 +87,27 @@ server <- function(input, output) {
         new_con = poolCheckout(cur_pool)
         
         seat_query = "SELECT *
-                FROM \"project_V01\".parliamentarian_seat_graph
+                FROM project.parliamentarian_seat_graph
                 WHERE UPPER(use) LIKE 'PARLIAMENTARIAN'
                 ;"
+        
         seat_data = dbGetQuery(new_con, seat_query)
 
-        vote_trans_query = "SELECT * FROM \"project_V01\".vote_value;"
+        vote_trans_query = "SELECT * FROM project.vote_value;"
         vote_trans = dbGetQuery(new_con, vote_trans_query)
         
         if(is.null(input$text_id)){
-            input$text_id = 152506 
+            input$text_id = 153633 
         }
         print(input)
         vote_query = paste("SELECT *
-            FROM \"project_V01\".votes
+            FROM project.votes
             WHERE text_id = ", input$text_id, ";")
         print(vote_query)
         vote_data = dbGetQuery(new_con, vote_query)
 
         parl_query = paste("SELECT *
-            FROM \"project_V01\".parliamentarian_info
+            FROM project.parliamentarian_info
             WHERE date = '", vote_data$date[1],"';", sep="")
 
         parl_data = dbGetQuery(new_con, parl_query)
@@ -158,7 +163,7 @@ server <- function(input, output) {
     
     output$description = renderUI({
         new_con = poolCheckout(cur_pool)
-        text_query = paste("SELECT * FROM \"project_V01\".text WHERE text_id = ", input$text_id, ";")
+        text_query = paste("SELECT * FROM project.text WHERE text_id = ", input$text_id, ";")
         text_data = dbGetQuery(new_con, text_query)
         poolReturn(new_con)
         

@@ -96,8 +96,9 @@ def get_parl_place(plan_pdf):
     """
 
     place_in_parl = {}
+    print(plan_pdf.pages[1])
     first_page_text = plan_pdf.pages[0].extract_text(0)
-
+    print(first_page_text)
     place_date = re.findall(r"\d+\.\d+\.\d+", first_page_text)[0]
     
     # replace spaces in names with _
@@ -124,7 +125,7 @@ def parse_plan_pdf(plan_html_content):
 
     Args:
         plan_html_content (bytes): pdf plan content
-
+S
     Returns:
         (str, dict): (place_date, parl_seat)
             place_date: string that correspond to the date places where given
@@ -145,6 +146,7 @@ if __name__ == "__main__":
     map which excludes parliamentarian that are not present.
     """
     for parl_plan in generator_plan():
+        print(parl_plan)
         cur_url = "https://www.europarl.europa.eu/sedcms/pubfile/HEMICYCLE/{}.pdf".format(parl_plan)
         plan_content = retrieve_plan_pdf(cur_url)
 

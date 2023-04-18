@@ -156,7 +156,7 @@ def write_days_urls_data(parsed_planning_filepath, write_filepath, list_vect_dat
         if vect_data[0] not in already_parsed: 
             str_all_data += ",".join(vect_data) + "\n"
 
-    with open(write_filepath, "a") as write_file:
+    with open(new_filepath  , "a") as write_file:
         write_file.write(str_all_data)
     
 

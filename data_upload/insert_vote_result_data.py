@@ -228,8 +228,7 @@ def orchestrate_update(isApply=False):
     parl_in_db = get_db_parl_id()
     db_seat_parl = get_db_seat_parl_id()
     success, fail = parse_vote_data((parl_in_db, db_seat_parl))
-    isApply = False
-    insert_db(success)
+    insert_db(success, isApply)
     write_file(fail, isApply)
 
 

@@ -108,8 +108,8 @@ def extract_vote_result(vote_data):
     for vote_content in vote_data:
         vote_result = {}
         for vote_value in list_vote_values:
+            cur_member = {}
             if vote_value in vote_content.keys():
-                cur_member = {}
                 pgs = vote_content[vote_value]
                 for pg in pgs.keys():
                     members = pgs[pg]
@@ -129,11 +129,23 @@ def extract_vote_result(vote_data):
     return result_content_vote
 
 def write_json(filepath, data_json):
+    """Dump dict in JSON
+
+    Args:
+        filepath (str): filepath to json file
+        data_json (Dict): Dictionary to dump into json
+    """
     with open(filepath, "w") as json_file:
         json.dump(data_json, json_file)
 
 
 def write_csv(filepath, list_item):
+    """Write minutes information in csv
+
+    Args:
+        filepath (str): filepath to write file
+        list_item (List[List]): List of tuple
+    """
     csv_text = ""
     for url_index in range(len(list_item)):
         csv_text += "{},{}\n".format(url_index, list_item[url_index])

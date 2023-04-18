@@ -85,7 +85,7 @@ def write_text_data(texts_info, filepath):
     texts_str_data = ""
 
     for text_info in texts_info:
-        texts_str_data += ",".join(text_info) + "\n"
+        texts_str_data += ";".join(text_info) + "\n"
 
     with open(filepath, "a") as write_file:
         write_file.write(texts_str_data)
