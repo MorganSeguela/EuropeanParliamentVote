@@ -13,12 +13,12 @@ Version:
 */
 DROP TABLE IF EXISTS project.votes;
 DROP TABLE IF EXISTS project.sits_on;
-DROP TABLE IF EXISTS project.voteContent;
+DROP TABLE IF EXISTS project.vote_content;
 
 DROP TABLE IF EXISTS project.text;
 DROP TABLE IF EXISTS project.minute;
 
-DROP TABLE IF EXISTS project.voteValue;
+DROP TABLE IF EXISTS project.vote_value;
 
 DROP TABLE IF EXISTS project.parliamentarian;
 DROP TABLE IF EXISTS project.political_group;
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS project.political_group
 (
     pg_id integer NOT NULL,
     pg_name character varying(128) COLLATE pg_catalog."default" NOT NULL,
-    pg_abrv character varying(8) COLLATE pg_catalog."default" NOT NULL,
+    pg_abrv character varying(16) COLLATE pg_catalog."default" NOT NULL,
     CONSTRAINT pk_politicalgroup PRIMARY KEY (pg_id)
 );
 
@@ -127,7 +127,7 @@ COMMENT ON TABLE project.parliamentarian
 /* ======= Vote information ======== */
 /* ================================= */
 -- Table: project.VoteValue
-CREATE TABLE IF NOT EXISTS project.voteValue
+CREATE TABLE IF NOT EXISTS project.vote_value
 (
     vote_id integer NOT NULL,
     vote_name character varying(16) COLLATE pg_catalog."default" NOT NULL,
@@ -135,25 +135,24 @@ CREATE TABLE IF NOT EXISTS project.voteValue
     CONSTRAINT pk_votevalue PRIMARY KEY (vote_id)
 );
 
-ALTER TABLE IF EXISTS project.voteValue
+ALTER TABLE IF EXISTS project.vote_value
     OWNER to postgres;
 
-GRANT SELECT ON TABLE project.voteValue TO PUBLIC;
+GRANT SELECT ON TABLE project.vote_value TO PUBLIC;
 
-GRANT ALL ON TABLE project.voteValue TO postgres;
+GRANT ALL ON TABLE project.vote_value TO postgres;
 
-COMMENT ON TABLE project.voteValue
+COMMENT ON TABLE project.vote_value
     IS 'Value of choices during votes : abstention, for, against, missing';
 
 
 -- Table: project.Text
 CREATE TABLE IF NOT EXISTS project.text
 (
-    text_id integer NOT NULL,
     reference character varying(16) COLLATE pg_catalog."default" NOT NULL,
     description text COLLATE pg_catalog."default",
     url character varying(256) COLLATE pg_catalog."default" NOT NULL,
-    CONSTRAINT pk_text PRIMARY KEY (text_id)
+    CONSTRAINT pk_text PRIMARY KEY (reference)
 );
 
 ALTER TABLE IF EXISTS project.text
@@ -171,7 +170,6 @@ COMMENT ON TABLE project.text
 CREATE TABLE IF NOT EXISTS project.minute
 (
     minute_id integer NOT NULL,
-    minute_date date NOT NULL,
     minute_url character varying(128) COLLATE pg_catalog."default" NOT NULL,
     CONSTRAINT pk_minute PRIMARY KEY (minute_id)
 );
@@ -184,24 +182,25 @@ GRANT SELECT ON TABLE project.minute TO PUBLIC;
 GRANT ALL ON TABLE project.minute TO postgres;
 
 
--- Table: project.voteContent
-CREATE TABLE IF NOT EXISTS project.voteContent
+-- Table: project.vote_content
+CREATE TABLE IF NOT EXISTS project.vote_content
 (
     content_id integer NOT NULL,
-    desscription text NOT NULL COLLATE pg_catalog."default" NOT NULL,
-    text_id integer,
+    description text NOT NULL COLLATE pg_catalog."default" NOT NULL,
+    vote_time timestamp without time zone NOT NULL,
+    reference_text character varying(16) COLLATE pg_catalog."default",
     minute_id integer NOT NULL,
-    CONSTRAINT pk_voteContent PRIMARY KEY (content_id),
-    CONSTRAINT fk_content_text FOREIGN KEY (text_id) REFERENCES project.text(text_id),
+    CONSTRAINT pk_vote_content PRIMARY KEY (content_id),
+    CONSTRAINT fk_content_text FOREIGN KEY (reference_text) REFERENCES project.text(reference),
     CONSTRAINT fk_content_minute FOREIGN KEY (minute_id) REFERENCES project.minute(minute_id)
 );
 
-ALTER TABLE IF EXISTS project.voteContent
+ALTER TABLE IF EXISTS project.vote_content
     OWNER to postgres;
 
-GRANT SELECT ON TABLE project.voteContent TO PUBLIC;
+GRANT SELECT ON TABLE project.vote_content TO PUBLIC;
 
-GRANT ALL ON TABLE project.voteContent TO postgres;
+GRANT ALL ON TABLE project.vote_content TO postgres;
 
 
 -- Table: project.votes
@@ -209,17 +208,15 @@ CREATE TABLE IF NOT EXISTS project.votes
 (
     parliamentarian_id integer NOT NULL,
     content_id integer NOT NULL,
-    vote_time timestamp with time zone NOT NULL,
     final_vote_id integer,
     intention_vote_id integer,
-    seat_id integer,
-    CONSTRAINT pk_votes PRIMARY KEY (parliamentarian_id, content_id, vote_time),
+    CONSTRAINT pk_votes PRIMARY KEY (parliamentarian_id, content_id),
     CONSTRAINT fk_votes_vote_value_choice FOREIGN KEY (final_vote_id)
-        REFERENCES project.voteValue (vote_id) MATCH SIMPLE
+        REFERENCES project.vote_value (vote_id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION,
     CONSTRAINT fk_votes_vote_value_intention FOREIGN KEY (intention_vote_id)
-        REFERENCES project.voteValue (vote_id) MATCH SIMPLE
+        REFERENCES project.vote_value (vote_id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION,
     CONSTRAINT fk_votes_parliamentarian FOREIGN KEY (parliamentarian_id)
@@ -227,7 +224,7 @@ CREATE TABLE IF NOT EXISTS project.votes
         ON UPDATE NO ACTION
         ON DELETE NO ACTION,
     CONSTRAINT fk_votes_content FOREIGN KEY (content_id)
-        REFERENCES project.voteContent (content_id)
+        REFERENCES project.vote_content (content_id)
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
 );
