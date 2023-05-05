@@ -18,7 +18,6 @@ import os
 # Date time package for filename
 from datetime import datetime
 
-
 def get_db_parl_id():
     """Retrieve Parliamentarian ID are in the database
 
@@ -43,6 +42,12 @@ def get_db_seat_parl_id():
             res_dict[tuple[1]] = []
         res_dict[tuple[1]].append(tuple[0])
     return res_dict
+
+
+def get_content_id_db():
+    query_str = "SELECT DISTINCT(content_id) FROM project.votes;"
+    db_res = db.query_db(query_str)
+    return [tuple[0] for tuple in db_res]
 
 
 def gen_vote_files():
@@ -148,13 +153,13 @@ def parse_vote_data(verification):
     """
     res_suc = []
     res_fail = []
-    unique_content = []
+    unique_content = get_content_id_db()
     for vote_file in gen_vote_files():
         cur_file = {}
         with open(vote_file, "r") as vote_fc:
             cur_file = json.load(vote_fc)
         for content_id in cur_file.keys():
-            if content_id not in unique_content:
+            if int(content_id) not in unique_content:
                 unique_content.append(content_id)
                 tmp_res, tmp_fail, isSuccess = ext_verify_vote(cur_file[content_id], verification)
                 if isSuccess:
@@ -238,3 +243,5 @@ def orchestrate_update(isApply=False):
 
 if __name__ == "__main__":
     orchestrate_update(True)
+
+

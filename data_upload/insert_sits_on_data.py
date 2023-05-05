@@ -20,6 +20,7 @@ import os
 # Date time package
 from datetime import datetime
 
+import time
 
 def get_date_sits():
     """Retrieve sits on date in database
@@ -60,7 +61,8 @@ def verify_seat_nb(parliament_id, sits_data):
     """
     seat_in_parl = get_seat_num(parliament_id=parliament_id)
     for one_sit in sits_data:
-        seat_in_parl.remove(one_sit)
+        if one_sit in seat_in_parl:
+            seat_in_parl.remove(one_sit)
     return seat_in_parl
     
 
@@ -88,9 +90,10 @@ def insert_new_seat(isApply=False):
     new_sits = []
     for tfile in gen_sits_transco_file():
         parsed_date = datetime.strptime(tfile.split(".")[0].split("_")[-1], "%y%m%d")
+        print(parsed_date)
         parliament_id = parliaments.index(tfile.split("/")[-1].split(".")[0].split("_")[1])*1000
         cur_data = []
-        if parsed_date not in db_dates:
+        if parsed_date.date() not in db_dates:
             with open(tfile, "r") as tcontent:
                 all_lines = tcontent.readlines()
                 seat_cons = [int(this_line.split(",")[3]) for this_line in all_lines]
