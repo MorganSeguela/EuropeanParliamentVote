@@ -8,6 +8,16 @@ Version:
     V0.2: Moving sits_on table and add information about text and vote content
 */
 
+
+/* 
+    CREATE project SCHEMA
+*/
+CREATE SCHEMA IF NOT EXISTS project
+        AUTHORIZATION postgres;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA project
+GRANT SELECT ON TABLES TO PUBLIC;
+
 /*
     DROP ALL TABLES
 */
@@ -191,7 +201,7 @@ CREATE TABLE IF NOT EXISTS project.vote_content
     reference_text character varying(16) COLLATE pg_catalog."default",
     minute_id integer NOT NULL,
     CONSTRAINT pk_vote_content PRIMARY KEY (content_id),
-    CONSTRAINT fk_content_text FOREIGN KEY (reference_text) REFERENCES project.text(reference),
+    CONSTRAINT fk_content_text FOREIGN KEY (reference_text) REFERENCES project.text(reference) MATCH SIMPLE,
     CONSTRAINT fk_content_minute FOREIGN KEY (minute_id) REFERENCES project.minute(minute_id)
 );
 
