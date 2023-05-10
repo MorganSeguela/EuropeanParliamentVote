@@ -5,7 +5,7 @@ library(pool)
 library(ConfigParser)
 library(RPostgreSQL)
 
-setwd("~/Documents/EuropeanParliamentVote/")
+setwd("~/Documents/EuropeanParliamentVote/data_visualisation/result_vote_webapp/")
 
 config_db <- ConfigParser$new(Sys.getenv(), optionxform = identity)
 config_db$read("database.ini")

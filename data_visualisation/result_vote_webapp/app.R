@@ -17,7 +17,7 @@ source("db_access.R", local=T)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-
+    includeCSS("style.css"),
     # Application title
     titlePanel("European Parliament Votes"),
     
