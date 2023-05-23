@@ -18,23 +18,37 @@ source("db_access.R", local=T)
 # Define UI for application that draws a histogram
 ui <- fluidPage(
     includeCSS("style.css"),
-    # Application title
-    titlePanel("European Parliament Votes"),
     
-    checkboxInput("text_asso", "Vote associated to text ?", value = FALSE),
-
+    # Application title
+    HTML("<body>
+            <div class=\"main\">
+                <div class=\"content\">"),
+    
+    HTML("<h2>European Parliament Votes</h2>
+          <div class=\"clr\"></div>" ),
+    
+    fluidRow(
+        column(width = 4,
+               uiOutput("choice_date")),
+        column(width = 4,
+               checkboxInput(
+                   "text_asso",
+                   "Vote associated to text ?",
+                   value = FALSE))
+    ),
+    
     fluidRow(
         conditionalPanel(
             condition="input.text_asso == true",
-            column(4, 
+            column(4,
                    uiOutput("choice_text_red")
                    )
                ),
-        column(4, 
-               uiOutput("choice_cont_id")          
+        column(4,
+               uiOutput("choice_cont_id")
                )
     ),
-    
+
     mainPanel(
         plotlyOutput("parlPlot"),
         conditionalPanel(
@@ -42,14 +56,27 @@ ui <- fluidPage(
             htmlOutput("text_desc")
         ),
         htmlOutput("cont_desc")
-    )
-    
+    ),
+    HTML("      <div class=\"clr\"></div>
+                </div>
+            </div>
+         </body>")
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
+    output$choice_date = renderUI({
+        dateData = retrieve_date()
+        selectInput("date_votes",
+                    label = "When did the vote happen ?",
+                    choices = dateData,
+                    selected = dateData[1],
+                    multiple = FALSE
+                   )    
+    })
+    
     output$choice_text_red = renderUI({
-        textData = retrieve_text()
+        textData = retrieve_text(input$date_votes)
         selectInput("text_id",
                     label = "Choose which text",
                     choices = textData[,2],
@@ -60,12 +87,17 @@ server <- function(input, output, session) {
     
     
     output$choice_cont_id = renderUI({
-        textData = retrieve_text()
-        contData = retrieve_content("", FALSE)
+        textData = retrieve_text(input$date_votes)
+        contData = NULL
         if(input$text_asso){
-            contData = retrieve_content(textData[input$text_id == textData[,2],1], input$text_asso)
+            contData = retrieve_content(
+                textData[input$text_id == textData[,2],1],
+                input$date_votes,
+                input$text_asso
+                )
+        } else {
+            contData = retrieve_content("", input$date_votes, FALSE)
         }
-        print(contData)
         selectInput(
             "content_id",
             label = "Choose which content",
@@ -77,10 +109,15 @@ server <- function(input, output, session) {
     
     
     output$parlPlot = renderPlotly({
-        textData = retrieve_text()
-        contData = retrieve_content("", FALSE)
+        textData = retrieve_text(input$date_votes)
+        contData = NULL
         if(input$text_asso){
-            contData = retrieve_content(textData[input$text_id == textData[,2],1], input$text_asso)
+            contData = retrieve_content(
+                textData[input$text_id == textData[,2],1],
+                input$date_votes,
+                input$text_asso)
+        } else {
+            contData = retrieve_content("", input$date_votes, FALSE)
         }
         seat_data = get_seat()
         vote_trans = get_vote_val()
@@ -106,11 +143,13 @@ server <- function(input, output, session) {
         
         cur_vote$parliament_name[is.na(cur_vote$parliamentarian_id)] = "unknown"
         vote_trans = rbind(vote_trans, c(3, "absent", 0))
-        vote_trans$color = c("blue", "red", "darkgrey", "black")
+        vote_trans$color = c("#40FF40", "#FF4040", "#8c8c8c", "#000000")
+        vote_trans$point = c("cross-thin","line-ew","diamond-tall", "circle")
         cur_vote = merge(cur_vote, vote_trans, by.x = "final_vote_id", by.y = "vote_id")
-        
-        cur_vote = cur_vote[,c(1:6,8:12,15:17)]
+
+        cur_vote = cur_vote[,c(1:6,8:12,15:18)]
         cur_vote$final_vote_id = factor(cur_vote$final_vote_id, levels = vote_trans$vote_id)
+        
         
         parliament_graph = ggplot(cur_vote) +
             geom_point(mapping = aes(x=xpos01, y=ypos01, color=final_vote_id)) +
@@ -123,21 +162,26 @@ server <- function(input, output, session) {
                     title.hjust = 0.5,
                     title.vjust = 0.1,
                     direction = "horizontal"
-                )) +
+                )) + 
             theme_void() +
             theme(legend.position = "bottom")
         
-        parliament_graph
         
         plot_v1 = ggplotly(parliament_graph, originalData = TRUE)
         
-        to_modify_plot = plotly_build(plot_v1)
+        to_modify_plot = plotly_build(plot_v1) %>% 
+            layout(
+                    xaxis = list(fixedrange = TRUE),
+                    yaxis = list(fixedrange = TRUE)
+                )
+        
         
         for (i in c(1:length(to_modify_plot$x$data))) {
             to_modify_plot$x$data[[i]]$text = paste(cur_vote$p_fullname[cur_vote$final_vote_id == i-1], "<br />",
                                                     cur_vote$pg_name[cur_vote$final_vote_id == i-1], "<br />", 
                                                     cur_vote$country_name[cur_vote$final_vote_id == i-1])
             to_modify_plot$x$data[[i]]$name = unique(cur_vote$vote_name)[i]
+            to_modify_plot$x$data[[i]]$marker$symbol = unique(cur_vote$point)[i]
             
         }
         
@@ -151,25 +195,35 @@ server <- function(input, output, session) {
     })
     
     output$text_desc = renderUI({
-        textData = retrieve_text()
+        textData = retrieve_text(input$date_votes)
         cur_text = textData[input$text_id == textData[,2],]
         remove(textData)
-        HTML(paste("Reference: ", cur_text[1],
+        HTML(paste("<div class=\"article\">
+                    <h2> Text Information </h2>
+                    <div class=\"clr\"></div>
+                    Reference: ", cur_text[1],
                    "<br />Description:<br />", cur_text[3],
-                   "<br />Available here: ", cur_text[4]))
+                   "<br />Available here: ", cur_text[4],
+                   "</div>"))
     })
     
     output$cont_desc = renderUI({
-        textData = retrieve_text()
-        contData = retrieve_content("", FALSE)
+        textData = retrieve_text(input$date_votes)
+        contData = NULL
         if(input$text_asso){
-            contData = retrieve_content(textData[input$text_id == textData[,2],1], input$text_asso)
+            contData = retrieve_content(textData[input$text_id == textData[,2],1], input$date_votes, input$text_asso)
+        } else {
+            contData = retrieve_content("", input$date_votes, FALSE)
         }
         cur_cont = contData[input$content_id == contData[,2],]
         print(cur_cont)
         remove(contData)
-        HTML(paste("This vote is about: ", cur_cont[4],
-                   "<br />The minute is available here: ", cur_cont[5]))
+        HTML(paste("<div class=\"article\">
+                    <h2>Vote content</h2>
+                    <div class=\"clr\"></div>
+                    This vote is about: ", cur_cont[4],
+                    "<br />The minute is available here: ", cur_cont[5],
+                    "</div>"))
     })
 }
 

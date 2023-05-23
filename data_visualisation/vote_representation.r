@@ -19,7 +19,7 @@ con = dbConnect(drv = drv,
                 password = config_db$data$postgresql$password)
 
 seat_query = "SELECT *
-                FROM project.parliamentarian_seat_graph
+                FROM project.parliament_seat_graph
                 WHERE UPPER(use) LIKE 'PARLIAMENTARIAN'
                 ;"
 seat_data = dbGetQuery(con, seat_query)
@@ -28,14 +28,21 @@ vote_trans_query = "SELECT * FROM project.vote_value;"
 vote_trans = dbGetQuery(con, vote_trans_query)
 
 vote_query = "SELECT *
-    FROM project.votes
-    WHERE text_id = (SELECT MAX(text_id) FROM project.votes);"
+    FROM project.votes vo, project.vote_content vc
+    WHERE vo.content_id = (SELECT MAX(content_id) FROM project.votes)
+    AND vo.content_id = vc.content_id;"
 
 vote_data = dbGetQuery(con, vote_query)
 
+test= "2023-04-17"
+
+# parl_query = paste("SELECT * 
+#     FROM project.parliamentarian_info
+#     WHERE date_sit = '", as.Date(vote_data$vote_time[1]),"';", sep="")
+
 parl_query = paste("SELECT * 
     FROM project.parliamentarian_info
-    WHERE date = '", vote_data$date[1],"';", sep="")
+    WHERE date_sit = '", test,"';", sep="")
 
 parl_data = dbGetQuery(con, parl_query)
 
@@ -50,12 +57,17 @@ cur_vote$final_vote_id[is.na(cur_vote$final_vote_id)] = 3
 cur_vote$parliament_name[is.na(cur_vote$parliamentarian_id)] = "unknown"
 
 vote_trans = rbind(vote_trans, c(3, "absent", 0))
+vote_trans$color = c("#40FF40", "#FF4040", "#8c8c8c", "#000000")
+vote_trans$point = c("+", "-", "0", 16)
+
 cur_vote = merge(cur_vote, vote_trans, by.x = "final_vote_id", by.y = "vote_id")
-cur_vote = cur_vote[,c(1:6,8:12,16:17)]
+# cur_vote = cur_vote[,c(1:6,8:12,16:17)]
 cur_vote$final_vote_id = factor(cur_vote$final_vote_id)
 
+cur_vote = cur_vote[!is.na(cur_vote$content_id),]
+
 parliament_graph = ggplot(cur_vote) +
-    geom_point(mapping = aes(x=xpos01, y=ypos01, color=final_vote_id)) +
+    geom_point(mapping = aes(x=xpos01, y=ypos01, color=final_vote_id, shape=final_vote_id)) +
     scale_color_manual(
         labels = unique(cur_vote$vote_name),
         values = c("blue", "red", "darkgrey", "black"),
@@ -66,6 +78,10 @@ parliament_graph = ggplot(cur_vote) +
         title.vjust = 0.1,
         direction = "horizontal"
     )) +
+    scale_shape_manual(
+        labels = unique(cur_vote$vote_name),
+        values = c("+", "-", "0", 16)
+    ) +
     theme_void() +
     theme(legend.position = "bottom")
 

@@ -5,7 +5,7 @@ library(pool)
 library(ConfigParser)
 library(RPostgreSQL)
 
-setwd("~/Documents/EuropeanParliamentVote/data_visualisation/result_vote_webapp/")
+# setwd("~/Documents/EuropeanParliamentVote/data_visualisation/result_vote_webapp/")
 
 config_db <- ConfigParser$new(Sys.getenv(), optionxform = identity)
 config_db$read("database.ini")
@@ -21,11 +21,58 @@ cur_pool = dbPool(
     password = config_db$data$postgresql$password
 )
 
-
-
-retrieve_content = function(reference, isText=TRUE){
+retrieve_date = function(){
     new_con = poolCheckout(cur_pool)
     input_text_id = "
+        SELECT DISTINCT(TO_CHAR(co.vote_time, 'YYYY-MM') || '-01')::date as range_date
+        FROM project.vote_content co, project.votes vo
+        WHERE co.content_id = vo.content_id
+        ORDER BY range_date DESC;
+    "
+    query = sqlInterpolate(new_con, input_text_id)
+    resData = dbGetQuery(new_con, input_text_id)
+    poolReturn(new_con)
+    resData
+}
+
+first_date = retrieve_date()
+first_date = first_date$range_date[1]
+
+retrieve_text = function(chosen_date){
+    dateRange = seq(as.Date(first_date), by="month", length = 2)
+    if(length(chosen_date) > 0){
+        dateRange = seq(as.Date(chosen_date), by="month", length = 2)
+    }
+    new_con = poolCheckout(cur_pool)
+    input_text_id = paste("
+        SELECT DISTINCT(te.reference) as id,
+            te.reference || ' - ' || LEFT(te.description, 120) || '...' as desc,
+            te.description,
+            te.url
+        FROM project.text te, project.vote_content vc, project.votes v
+        WHERE te.reference = vc.reference_text
+        AND vc.content_id = v.content_id
+        AND DATE(vc.vote_time) >= \'",
+        dateRange[1], "\'
+        AND DATE(vc.vote_time) < \'", 
+        dateRange[2],"\';", sep="")
+    query = sqlInterpolate(new_con, input_text_id)
+    resData = dbGetQuery(new_con, input_text_id)
+    poolReturn(new_con)
+    resData
+}
+
+
+
+retrieve_content = function(reference, chosen_date,  isText=TRUE){
+    dateRange = seq(as.Date(first_date), by="month", length = 2)
+    if(length(chosen_date) > 0){
+        dateRange = seq(as.Date(chosen_date), by="month", length = 2)
+    }
+    new_con = poolCheckout(cur_pool)
+    dateCond = paste("AND DATE(vc.vote_time) >= \'", dateRange[1], "\'
+                     AND DATE(vc.vote_time) < \'", dateRange[2], "\'", sep="")
+    input_text_id = paste("
         SELECT DISTINCT(vc.content_id) as id,
             DATE(vote_time) || ' - ' || LEFT(description, 100) as desc,
             vote_time,
@@ -35,10 +82,11 @@ retrieve_content = function(reference, isText=TRUE){
         WHERE reference_text IS NULL
         AND vc.content_id = v.content_id
         AND vc.minute_id = mn.minute_id
+        ", dateCond, "
         ORDER BY vote_time DESC;
-    "
+    ", sep="")
     
-    if(isText && !is.na(reference)){
+    if(isText && length(reference) > 0){
         input_text_id = paste("
         SELECT DISTINCT(vc.content_id) as id,
             DATE(vote_time) || ' - ' || LEFT(description, 100) as desc,
@@ -49,7 +97,8 @@ retrieve_content = function(reference, isText=TRUE){
         WHERE vc.content_id = v.content_id
         AND vc.minute_id = mn.minute_id
         AND reference_text LIKE \'", reference,"\'
-                              ORDER BY vote_time DESC;", sep="")
+        ", dateCond, "
+        ORDER BY vote_time DESC;", sep="")
     }
 
     query = sqlInterpolate(new_con, input_text_id)
@@ -57,26 +106,6 @@ retrieve_content = function(reference, isText=TRUE){
     poolReturn(new_con)
     resData
 }
-
-
-
-retrieve_text = function(){
-    new_con = poolCheckout(cur_pool)
-    input_text_id = "
-        SELECT DISTINCT(te.reference) as id,
-            te.reference || ' - ' || LEFT(te.description, 120) || '...' as desc,
-            te.description,
-            te.url
-        FROM project.text te, project.vote_content vc, project.votes v
-        WHERE te.reference = vc.reference_text
-        AND vc.content_id = v.content_id;
-    "
-    query = sqlInterpolate(new_con, input_text_id)
-    resData = dbGetQuery(new_con, input_text_id)
-    poolReturn(new_con)
-    resData
-}
-
 
 get_seat = function(){
     new_con = poolCheckout(cur_pool)
