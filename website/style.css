@@ -4,7 +4,7 @@ Design by http://www.templateaccess.com
 Released for free under a Creative Commons Attribution 3.0 License
 */
 
-body { margin:0; padding:0; width:100%; color:#9a9a9a; font:normal 12px/1.8em Arial, Helvetica, sans-serif;}
+body { margin:0; padding:0; width:100%; color:#9a9a9a; font:normal 12px/1.8em Arial, Helvetica, sans-serif; background:#f7f7f7;}
 html, .main { padding:0; margin:0; background:#f7f7f7 url(images/main_bg.jpg) top center repeat-x;}
 .clr { clear:both; padding:0; margin:0; width:100%; font-size:0px; line-height:0px;}
 .logo { padding:30px 0 0 0; float:left; width:100%;}
@@ -64,20 +64,26 @@ ul.ex_menu li a:hover { text-decoration:none;}
 .content .mainbar .comment img.userpic { border:1px solid #dedede; margin:10px 16px 0 0; padding:0; float:left;}
 
 /* fbg */
-.fbg { width: 930px; padding:40px 0 0 0; background: #656565 url(images/footer_bg.gif) bottom repeat-x;}
-.fbg_resize { margin:0 auto; padding:0 20px; width:930px;}
+.fbg { width: fit-content; padding:40px 0 0 0; background: #656565 url(images/footer_bg.gif) bottom repeat-x;}
+/* .fbg { width: 930px; padding:40px 0 0 0; background: #656565 url(images/footer_bg.gif) bottom repeat-x;} */
+/* .fbg_resize { margin:0 auto; padding:0 20px; width:930px;} */
+.fbg_resize { margin:0 auto; padding:0 20px; width:100%;}
 .fbg  h2 { color:#fff;}
 .fbg p { color:#f7f7f7;}
 .fbg  img { padding:4px; border:1px solid #cfd2d4; background-color:#fff;}
 .fbg .col { margin:0; float:left;}
-.fbg .c1 { padding:0 16px 0 0; width:200px;}
-.fbg .c2 { padding:0 16px; width:396px;}
-.fbg .c3 { padding:0 0 0 16px; width:230px;}
+/* .fbg .c1 { padding:0 16px 0 0; width:200px;} */
+.fbg .c1 { padding:0 16px 0 0; width:23%;}
+/* .fbg .c2 { padding:0 16px; width:396px;} */
+.fbg .c2 { padding:0 16px; width:35%;}
+/* .fbg .c3 { padding:0 0 0 16px; width:230px;} */
+.fbg .c3 { padding:0 0 0 16px; width:25%;}
 .fbg .c1 img { margin:8px;}
 .fbg .c3 img { margin:8px 16px 4px 0; float:left;}
 
 /* footer */
-.footer { width:920px; margin:0 auto; padding:40px 0 20px 0;}
+/* .footer { width:920px; margin:0 auto; padding:40px 0 20px 0;} */
+.footer { width:100%; margin:0 auto; padding:40px 0 20px 0;}
 .footer p.lf { margin:0; padding:4px 0; float:right; width:auto; text-align:right; line-height:1.5em; color:#888787;}
 .footer p.lf a { color:#2cadff;}
 .footer p.lr { margin:0; padding:4px 0; float:left; width:auto; line-height:1.5em; color:#888787;}

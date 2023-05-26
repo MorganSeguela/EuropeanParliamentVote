@@ -31,6 +31,7 @@ def retrieve_agenda_html(agenda_url):
         str: HTML content of the EP agenda
     """
     agenda_html = rq.get(agenda_url)
+    
     return agenda_html.content
 
 
@@ -165,6 +166,7 @@ if __name__ == "__main__":
     agenda_url = "https://www.europarl.europa.eu/plenary/fr/votes.html?tab=votes"
     agenda_html = retrieve_agenda_html(agenda_url)
     all_data = retrieve_planning_urls(agenda_html)
+    print(all_data)
 
     parsed_planning_filepath = "parsed_days_url_vote.csv"
     write_planning_filepath = "first_days_url_vote.csv"
