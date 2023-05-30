@@ -1,0 +1,77 @@
+# INTRODUCTION #
+Hello ! 
+Thank you for your interest in this project.
+
+To launch this project, you should have set up the DB according to the wiki.
+Also, a temporary directory to store temporary data. You will have to set the following directories: 
+- tmp/stage1  -  Raw data from website
+- tmp/stage2  -  Transformed and joined data before writing in DB
+
+I also use one last directories for input logs : 
+- tmp/logs  -  I use it when i run my db writing programs
+ 
+# Retrieving data #
+===============
+Tools to retrieve data are in data_retrieving directory.
+
+## One run ##
+Some data won't change overtime like seats information (for the data visualisation)
+To do so, we run init_seats_information.py that retrieve x and y position of each seat in each  parliament. 
+
+## Update run ##
+
+### Parliamentarian information ###
+First, you run init_parliamentarian_information.py
+This will retrieve all available parliamentarian information in stage1 with a json file
+
+Then, run init_parliamentaran_seats.py which will retrieve seats pdf plan.
+(In the future the interactive plan will be retrieved)
+
+### Vote information ###
+First, run the init_planning.py which wll retrieve all passed session within 4 months and this will provide link to xml minute for each session in stage1.
+
+Then, run init_text_information.py to retrieve link to the text.
+(In the future, we will retrieve amendment and final text)
+
+Finally, run init_vote.py that will retrieve vote of each parliamentarien for each text/amendment.
+
+# Transforming data #
+==================
+Tools to transform data and make them ready for the DB are in data_transformation directory.
+
+
+## Parliamentarian Information ##
+Here, we try to make a correspondance between parliamentarian information and the pdf seat plan with create_transco_seat_parliamentarian.py
+Results are stored in stage2 directory. However, it is important to double check as we only have names on plans.
+If any parliamentarian are not found, this is stored in fail_[BRU|STR]_[date].csv otherwise it gets in success_[BRU|STR]_[date].csv.
+And when all parliamentarian are checked, you have to create a transco_[STR|BRU]_[date].csv
+(In the future, if we gather data from interactive plan, we already have parliamentarian ID further explanation of the choice in the Wiki)
+
+Then, we exctract parliamentarian Polilical Group, their nationality, and their National Political Group with extract_pg_npg_country_parl.py.
+This permits to handle their ID when written in the DB.
+
+### Vote information ###
+Finally, we extract text, amendment from each minute to handle text and their amendment vote information and planning vote. 
+We run extract_text_pv_vote.py
+
+# Uploading data #
+===============
+Finally, we upload data to the DB.
+When i run these programs, I write logs in a tmp/logs file.
+
+## Insert data ##
+insert_[data].py is for a first input when the DB is empty. 
+
+First, you have to fill unlinked table, *seat*, *parliamentarian_data* and *vote_content*.
+Then run *sits_on* and *vote_result_data* to fill vote result and where parliamentarian sits. 
+
+## Update data ##
+When the DB is not empty, we update new data to be sure to not duplicate values.
+To do so, we run: update_[data].py.
+So we run these file in this order: update_parliamentarian_data.py => update_vote_content.py => update_vote_result.py
+
+# Data visualisation #
+To run the data visualisation, you'll have to create a configuration file to handle the DB connection. 
+And finally run the R-shiny app to get access to the dataviz.
+
+
