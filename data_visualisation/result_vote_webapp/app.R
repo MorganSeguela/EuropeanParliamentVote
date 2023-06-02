@@ -76,57 +76,48 @@ server <- function(input, output, session) {
     })
     
     output$choice_text_red = renderUI({
-        textData = retrieve_text(input$date_votes)
+        retrieve_text_amd(input$date_votes)
         selectInput("text_id",
                     label = "Choose which text",
-                    choices = textData[,2],
-                    selected = textData[1,2],
+                    choices = unique(glob_text_amdt_df$text_sum[!is.na(glob_text_amdt_df$text_id)]),
+                    selected = glob_text_amdt_df$text_sum[!is.na(glob_text_amdt_df$text_id)][1],
                     multiple = FALSE
         )
     })
     
     
     output$choice_cont_id = renderUI({
-        textData = retrieve_text(input$date_votes)
+        retrieve_text_amd(input$date_votes)
         contData = NULL
         if(input$text_asso){
-            contData = retrieve_content(
-                textData[input$text_id == textData[,2],1],
-                input$date_votes,
-                input$text_asso
-                )
+            print(glob_text_amdt_df[glob_text_amdt_df$text_sum == input$text_id,])
+            contData = glob_text_amdt_df[glob_text_amdt_df$text_sum == input$text_id &
+                                             !is.na(glob_text_amdt_df$text_sum),]
         } else {
-            contData = retrieve_content("", input$date_votes, FALSE)
+            print(glob_text_amdt_df[is.na(glob_text_amdt_df$text_id),])
+            contData = glob_text_amdt_df[is.na(glob_text_amdt_df$text_id),]
         }
         selectInput(
             "content_id",
             label = "Choose which content",
-            choices = contData[,2],
-            selected = contData[1,2],
+            choices = contData$amdt_sum,
+            selected = contData$amdt_sum[1],
             multiple = FALSE
         )
     })
     
     
     output$parlPlot = renderPlotly({
-        textData = retrieve_text(input$date_votes)
-        contData = NULL
-        if(input$text_asso){
-            contData = retrieve_content(
-                textData[input$text_id == textData[,2],1],
-                input$date_votes,
-                input$text_asso)
-        } else {
-            contData = retrieve_content("", input$date_votes, FALSE)
-        }
-        seat_data = get_seat()
-        vote_trans = get_vote_val()
+        contData = glob_text_amdt_df[glob_text_amdt_df$amdt_sum == input$content_id,]
         
-        cont_id_parl = choose_parliament(contData[input$content_id == contData[,2],1])
+        seat_data = glob_seat_data
+        vote_trans = glob_vote_value
         
-        vote_result = get_result(contData[input$content_id == contData[,2],1])
+        cont_id_parl = choose_parliament(contData$amdt_id)
         
-        remove(textData, contData)
+        vote_result = get_result(contData$amdt_id)
+        
+        remove(contData)
         
         print(cont_id_parl)
         
@@ -195,35 +186,24 @@ server <- function(input, output, session) {
     })
     
     output$text_desc = renderUI({
-        textData = retrieve_text(input$date_votes)
-        cur_text = textData[input$text_id == textData[,2],]
-        remove(textData)
+        cur_text = glob_text_amdt_df[glob_text_amdt_df$text_sum == input$text_id,]
         HTML(paste("<div class=\"article\">
                     <h2> Text Information </h2>
                     <div class=\"clr\"></div>
-                    Reference: ", cur_text[1],
-                   "<br />Description:<br />", cur_text[3],
-                   "<br />Available here: ", cur_text[4],
-                   "</div>"))
+                    Reference: ", cur_text$text_id[1],
+                   "<br />Description:<br />", cur_text$text_desc[1],
+                   "<br />Available here: <a href=\"", cur_text$text_url[1],
+                   "\">", cur_text$text_url[1], "</a></div>"))
     })
     
     output$cont_desc = renderUI({
-        textData = retrieve_text(input$date_votes)
-        contData = NULL
-        if(input$text_asso){
-            contData = retrieve_content(textData[input$text_id == textData[,2],1], input$date_votes, input$text_asso)
-        } else {
-            contData = retrieve_content("", input$date_votes, FALSE)
-        }
-        cur_cont = contData[input$content_id == contData[,2],]
-        print(cur_cont)
-        remove(contData)
+        cur_cont = glob_text_amdt_df[glob_text_amdt_df$amdt_sum == input$content_id,]
         HTML(paste("<div class=\"article\">
                     <h2>Vote content</h2>
                     <div class=\"clr\"></div>
-                    This vote is about: ", cur_cont[4],
-                    "<br />The minute is available here: ", cur_cont[5],
-                    "</div>"))
+                    This vote is about: ", cur_cont$amdt_desc,
+                    "<br />The minute is available here: <a href=\"", cur_cont$minute_url,
+                    "\">", cur_cont$minute_url,"</a></div>"))
     })
 }
 
