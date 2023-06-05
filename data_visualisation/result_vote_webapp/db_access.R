@@ -45,8 +45,6 @@ retrieve_date = function(){
 }
 
 retrieve_text_amd = function(chosen_date){
-    print(glob_first_date)
-    print(is.null(chosen_date))
     dateRange = seq(as.Date(glob_first_date), by="month", length = 2)
     if(length(chosen_date) > 0){
         glob_first_date <<- chosen_date

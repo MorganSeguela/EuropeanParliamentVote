@@ -34,7 +34,7 @@ ui <- fluidPage(
                checkboxInput(
                    "text_asso",
                    "Vote associated to text ?",
-                   value = FALSE))
+                   value = TRUE))
     ),
     
     fluidRow(
@@ -118,8 +118,6 @@ server <- function(input, output, session) {
         vote_result = get_result(contData$amdt_id)
         
         remove(contData)
-        
-        print(cont_id_parl)
         
         parl_info = get_parl_info(cont_id_parl[,2])
     
