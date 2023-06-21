@@ -81,7 +81,7 @@ def retrieve_day_url(parsed_week):
             if tchild.li.span != None:
 
                 # The 1st li links to a pdf, 2nd links to the right xml
-                vote_url = tchild.li.span.find_all("a")[1]['href']
+                vote_url = [one_a for one_a in tchild.li.span.find_all("a") if re.search("XML", one_a.text)][0]['href']
                 isH4 = True
 
                 # Verify if the second is the xml
