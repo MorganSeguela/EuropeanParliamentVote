@@ -1,9 +1,19 @@
 #!/usr/bin/env python3
 
-# Version: V0.2
-# Author : Morgan Séguéla
+# ======================== #
+####    Information     ####
+# ------------------------ #
+# Version   : V1
+# Author    : Morgan Séguéla
+# Date      : 21/06/2023
 
+####    Objective       ####
+# ------------------------ #
 # The goal of this program is to retrieve votes informations from the votes xml in planning.
+
+####    TO DO           ####
+# ------------------------ #
+# ======================== #
 
 # File and Directory management
 import os

@@ -1,10 +1,21 @@
 #!/usr/bin/env python3
 
-# Version: V0.2
-# Author : Morgan Séguéla
+# ======================== #
+####    Information     ####
+# ------------------------ #
+# Version   : V1
+# Author    : Morgan Séguéla
+# Date      : 21/06/2023
 
+####    Objective       ####
+# ------------------------ #
 # The goal of this program is to retrieve parliamentarian information
 # including, their name, country, political group european and nation wide
+
+####    TO DO           ####
+# ------------------------ #
+# Retrieve data from there open data website
+# ======================== #
 
 # Log package
 import logging

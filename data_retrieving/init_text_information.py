@@ -1,13 +1,22 @@
 #!/usr/bin/env python3
 
-# Version: V0.2
-# Author : Morgan Séguéla
+# ======================== #
+####    Information     ####
+# ------------------------ #
+# Version   : V1
+# Author    : Morgan Séguéla
+# Date      : 21/06/2023
 
+####    Objective       ####
+# ------------------------ #
 # The goal of this program is to retrieve text information. 
 # Ulitmately the content of the text, amendments and so on 
 # For now only the url to the text
 
+####    TO DO           ####
+# ------------------------ #
 # To do: Retrieve and parse data from text
+# ======================== #
 
 # File management package
 import os

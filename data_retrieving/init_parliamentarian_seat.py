@@ -1,10 +1,21 @@
 #!/usr/bin/env python3
 
-# Version: V0.2
-# Author : Morgan Séguéla
+# ======================== #
+####    Information     ####
+# ------------------------ #
+# Version   : V1
+# Author    : Morgan Séguéla
+# Date      : 21/06/2023
 
+####    Objective       ####
+# ------------------------ #
 # The goal of this program is to retrieve parliament plan with parliamentarian
 # We retrieve seat number and the parliamentarian name associated
+
+####    TO DO           ####
+# ------------------------ #
+# Retrieve this information from the interactive map
+# ======================== #
 
 # Log package
 import logging

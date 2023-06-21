@@ -1,12 +1,21 @@
 #!/usr/bin/env python3
 
-# Version: V0.2
-# Author : Morgan Séguéla
+# ======================== #
+####    Information     ####
+# ------------------------ #
+# Version   : V1
+# Author    : Morgan Séguéla
+# Date      : 21/06/2023
 
+####    Objective       ####
+# ------------------------ #
 # The goal of this program is to retrieve the planning from the European Parliament website
 # It retrieves the day and the URL to the xml minute
 
-# To do: Trying to retrieve planning from the calendar in the website
+####    TO DO           ####
+# ------------------------ #
+# Trying to retrieve planning from the calendar in the website
+# ======================== #
 
 # Parse html
 from bs4 import BeautifulSoup as bs
